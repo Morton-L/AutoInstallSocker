@@ -194,6 +194,13 @@ function InstallNginx(){
 	green " =================================================="
 	sleep 2s
 	yum install -y pcre-devel zlib-devel perl gcc
+	
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 依赖组件安装失败...请检查网络连接"
+		Error
+	fi
+	
 	green " =================================================="
 	green " 检测OpenSSL版本"
 	green " =================================================="
@@ -216,6 +223,11 @@ function InstallNginx(){
 	green " 开始下载Nginx源码..."
 	green " =================================================="
 	wget https://nginx.org/download/nginx-1.21.1.tar.gz
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 下载失败...请检查网络连接"
+		Error
+	fi
 	tar -xvzf nginx-1.21.1.tar.gz
 	cd /usr/local/nginx-1.21.1
 	./configure --with-http_ssl_module --with-http_v2_module
@@ -223,7 +235,17 @@ function InstallNginx(){
 	green " 开始编译并安装Nginx..."
 	green " =================================================="
 	make
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 编译失败...请查看日志"
+		Error
+	fi
 	make install
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 安装失败...请查看日志"
+		Error
+	fi
 	green " =================================================="
 	green " Nginx安装完成"
 	green " =================================================="
@@ -259,7 +281,7 @@ EOF
 	green " 验证安装..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-        ErrorInfo=" Nginx安装失败..."
+        ErrorInfo=" Nginx启动失败..."
 		Error
     fi
 	green " PASS"
@@ -285,6 +307,11 @@ function InstallOpenSSL(){
 	green " 开始下载OpenSSL源码..."
 	green " =================================================="
 	wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 下载失败...请检查网络连接"
+		Error
+	fi
 	tar -xvzf openssl-1.1.1k.tar.gz
 	cd openssl-1.1.1k
 	./Configure
@@ -293,8 +320,23 @@ function InstallOpenSSL(){
 	green " 开始编译并安装OpenSSL..."
 	green " =================================================="
 	make
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 编译失败...请查看日志"
+		Error
+	fi
 	make test
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 编译测试未通过...请重试"
+		Error
+	fi
 	make install
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 安装失败...请查看日志"
+		Error
+	fi
 	mv /usr/bin/openssl /usr/bin/openssl-old
 	ln -s /usr/local/bin/openssl /usr/bin/openssl
 	OpenSSLVersion=$(expr substr "$(/usr/local/bin/openssl version)" 9 6)
@@ -1174,7 +1216,7 @@ function InstallAutoCertXray(){
 	green " =================================================="
 	green " 安装snap核心"
 	green " =================================================="
-	sleep 6s
+	sleep 3s
 	snap install core
 	green " =================================================="
 	green " 安装certbot"
@@ -1237,10 +1279,22 @@ EOF
 	green " =================================================="
 	certbot --nginx
 	
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 证书申请失败...请查看日志"
+		Error
+	fi
+	
 	green " =================================================="
 	green " 测试续订..."
 	green " =================================================="
 	certbot renew --dry-run
+	
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 证书续订测试失败...请查看日志"
+		Error
+	fi
 	
 	green " =================================================="
 	green " 证书自动化同步..."
