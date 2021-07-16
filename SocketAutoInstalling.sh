@@ -175,11 +175,8 @@ function InstallV2ray(){
 	green " 验证安装..."
 	netstat -anp | grep v2ray &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " V2ray安装失败..."
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" V2ray安装失败..."
+		Error
     fi
 	green " PASS"
 	green " 将V2ray加入自启动项"
@@ -262,11 +259,8 @@ EOF
 	green " 验证安装..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " Nginx安装失败..."
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Nginx安装失败..."
+		Error
     fi
 	green " PASS"
 	green " =================================================="
@@ -618,22 +612,14 @@ EOF
 	green " 验证..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " 失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Nginx启动失败...请查看日志"
+		Error
     fi
 	
 	netstat -anp | grep v2ray &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " 失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" V2ray启动失败...请查看日志"
+		Error
     fi
 	
 	SockerConfig1=' Vless over TCP with TLS , 端口:443 '
@@ -985,22 +971,14 @@ EOF
 	green " 验证..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " 失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Nginx启动失败...请查看日志"
+		Error
     fi
 	
 	netstat -anp | grep xray &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " 失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Xray启动失败...请查看日志"
+		Error
     fi
 	
 	SockerConfig1=' Vless over TCP with XTLS , 端口:443 '
@@ -1067,11 +1045,8 @@ function InstallXUI(){
 	green " 验证安装..."
 	netstat -anp | grep x-ui &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " x-ui安装失败..."
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" x-ui安装失败..."
+		Error
     fi
 	green " PASS"
 	systemctl enable x-ui
@@ -1093,10 +1068,8 @@ function PortCheck(){
 	
 	    if [ -n "$PortTest1" ]; then
 			process1=`netstat -tlpn | awk -F '[: ]+' '$5=='$DestinationPort1'{print $9}'`
-			red "==========================================================="
-			red "检测到${DestinationPort1}端口被占用，占用进程为：${process1}，本次安装结束"
-			red "==========================================================="
-			exit 1
+			ErrorInfo="检测到${DestinationPort1}端口被占用，占用进程为：${process1}，本次安装结束"
+			Error
 		fi
 	fi
 	
@@ -1106,10 +1079,8 @@ function PortCheck(){
 	
 	    if [ -n "$PortTest2" ]; then
 			process1=`netstat -tlpn | awk -F '[: ]+' '$5=='$DestinationPort2'{print $9}'`
-			red "==========================================================="
-			red "检测到${DestinationPort2}端口被占用，占用进程为：${process2}，本次安装结束"
-			red "==========================================================="
-			exit 1
+			ErrorInfo="检测到${DestinationPort2}端口被占用，占用进程为：${process2}，本次安装结束"
+			Error
 		fi
 	fi
 	
@@ -1166,11 +1137,8 @@ function InstallXray(){
 	green " 验证安装..."
 	netstat -anp | grep xray &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " Xray安装失败..."
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Xray安装失败..."
+		Error
     fi
 	green " PASS"
 	green " 将Xray加入自启动项"
@@ -1257,12 +1225,8 @@ EOF
 	green " 验证..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " 失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" Nginx启动失败...请查看日志"
+		Error
     fi
 	green " =================================================="
 	green " PASS"
@@ -1289,12 +1253,8 @@ EOF
 	green " 配置验证..."
 	netstat -anp | grep nginx &> /dev/null
 	if [ $? -ne 0 ]; then
-		red " =================================================="
-        echo " xray启动失败..."
-		echo " 请查看日志"
-		red " =================================================="
-		sleep 6s
-		exit 1
+        ErrorInfo=" xray启动失败...请查看日志"
+		Error
     fi
 	install -d -o xray -g xray /etc/ssl/xray/
 	install -m 644 -o xray -g xray /etc/letsencrypt/live/$Domain/fullchain.pem -t /etc/ssl/xray/
@@ -1371,6 +1331,15 @@ function InformationDisplay(){
 	green " =================================================="
 	bold " 按任意键继续..."
 	read
+}
+
+# 错误反馈
+function Error(){
+	red " =================================================="
+	bold "${ErrorInfo}" 
+	red " =================================================="
+	sleep 6s
+	exit 1
 }
 
 # 主界面
