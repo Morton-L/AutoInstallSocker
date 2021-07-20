@@ -7,6 +7,7 @@ function ExternalEnv(){
 	OSVersionCheck
 	checkCPU
 	checkArchitecture
+	TCPCC
 	
 	# 判断Shell命令头
 	[[ -z $(echo $SHELL|grep zsh) ]] && osSystemShell="bash" || osSystemShell="zsh"
