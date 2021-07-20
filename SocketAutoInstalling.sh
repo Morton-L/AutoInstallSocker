@@ -1,12 +1,11 @@
 #!/bin/bash
+trap _exit INT QUIT TERM
 
 function ExternalEnv(){
 	# 系统信息获取
 	getLinuxOSRelease
 	getLinuxOSVersion
 	OSVersionCheck
-	checkCPU
-	checkArchitecture
 	TCPCC
 	
 	# 判断Shell命令头
@@ -104,27 +103,24 @@ function getLinuxOSVersion(){
     fi
 }
 
-# 检查处理器品牌
-function checkCPU(){
-	osCPUText=$(cat /proc/cpuinfo | grep vendor_id | uniq)
-	if [[ $osCPUText =~ "GenuineIntel" ]]; then
-		osCPU="intel"
-    else
-        osCPU="amd"
-    fi
+# 错误反馈
+function Error(){
+	red " =================================================="
+	bold "${ErrorInfo}" 
+	red " =================================================="
+	sleep 6s
+	exit 1
 }
 
-# 检测架构版本
-function checkArchitecture(){
-	# https://stackoverflow.com/questions/48678152/how-to-detect-386-amd64-arm-or-arm64-os-architecture-via-shell-bash
+# TCP拥塞控制查询
+function TCPCC(){
+	tcpcc=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+}
 
-	case $(uname -m) in
-		i386)   osArchitecture="386" ;;
-		i686)   osArchitecture="386" ;;
-		x86_64) osArchitecture="amd64" ;;
-		arm)    dpkg --print-architecture | grep -q "arm64" && osArchitecture="arm64" || osArchitecture="arm" ;;
-		* )     osArchitecture="arm" ;;
-	esac
+# 脚本已终止
+_exit() {
+    red "\n脚本已终止.\n"
+    exit 1
 }
 
 # 安装依赖软件
@@ -1408,19 +1404,8 @@ function InformationDisplay(){
 	read
 }
 
-# 错误反馈
-function Error(){
-	red " =================================================="
-	bold "${ErrorInfo}" 
-	red " =================================================="
-	sleep 6s
-	exit 1
-}
 
-# TCP拥塞控制查询
-function TCPCC(){
-	tcpcc=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
-}
+
 
 # 主界面
 function main(){
@@ -1428,8 +1413,6 @@ function main(){
 	green " =================================================="
 	bold  " 欢迎使用一键安装脚本"
 	green " =================================================="
-    green " 处理器品牌:   ${osCPU},"
-	green " 处理器架构:   ${osArchitecture},"
 	green " 系统信息:     ${osInfo}, ${osRelease},  "
 	green " 系统版本:     ${osReleaseVersionNo}, ${osReleaseVersion},"
 	green " Shell命令:    ${osSystemShell},"
