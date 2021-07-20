@@ -193,7 +193,7 @@ function InstallNginx(){
 	green " Nginx安装准备..."
 	green " =================================================="
 	sleep 2s
-	yum install -y pcre-devel zlib-devel perl gcc
+	$osSystemPackage install -y pcre-devel zlib-devel perl gcc
 	
 	# 判断执行结果
 	if [ $? -ne 0 ]; then
@@ -301,7 +301,7 @@ function InstallOpenSSL(){
 	green " 开始安装OpenSSL"
 	green " =================================================="
 	sleep 6s
-	yum remove -y openssl
+	$osSystemPackage remove -y openssl
 	cd /usr/local
 	green " =================================================="
 	green " 开始下载OpenSSL源码..."
@@ -1197,11 +1197,11 @@ function AutoCert(){
 	green " =================================================="
 	green " 安装EPEL扩展库..."
 	green " =================================================="
-	yum install -y epel-release
+	$osSystemPackage install -y epel-release
 	green " =================================================="
 	green " 安装并配置依赖环境..."
 	green " =================================================="
-	yum install -y snapd
+	$osSystemPackage install -y snapd
 	systemctl enable --now snapd.socket
 	ln -s /var/lib/snapd/snap /snap
 	green " =================================================="
@@ -1416,6 +1416,11 @@ function Error(){
 	exit 1
 }
 
+# TCP拥塞控制查询
+function TCPCC(){
+	tcpcc=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
+}
+
 # 主界面
 function main(){
     
@@ -1428,11 +1433,12 @@ function main(){
 	green " 系统版本:     ${osReleaseVersionNo}, ${osReleaseVersion},"
 	green " Shell命令:    ${osSystemShell},"
 	green " 包管理器:     ${osSystemPackage}"
+	green " TCP拥塞控制:  ${tcpcc}"
 	green " =================================================="
 	yellow "    1 .安装V2ray          2 .安装Xray"
 	yellow "    3 .安装x-ui           4 .编译安装Nginx"
-	yellow "    6 .证书自动续期 - V2ray"
-	yellow "    7 .证书自动续期 - Xray"
+	yellow "    5 .证书自动续期 - V2ray"
+	yellow "    6 .证书自动续期 - Xray"
 	yellow "    8 .对接V2ray与Nginx   9 .对接Xray与Nginx"
 	yellow "    q .退出"
 	green " =================================================="
@@ -1488,7 +1494,7 @@ function main(){
 		main
 	fi
 	
-	if [[ $Main == 7 ]]; then
+	if [[ $Main == 6 ]]; then
 		SELINUXCheck
 		SetDomain
 		AutoCert
