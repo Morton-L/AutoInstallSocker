@@ -1024,7 +1024,7 @@ EOF
     fi
 	
 	SockerConfig1=' Vless over TCP with XTLS , 端口:443 '
-	SockerConfig2=' Trojan , 端口:443 , 连接密码:${Password} '
+	SockerConfig2=' Trojan , 端口:443 , 连接密码: '$Password 
 	SockerConfig3=' Vless over WebSocker with TLS , 端口:443 , Path : /xws '
 	SockerConfig4=' Vless over TCP with TLS , 端口:443 , Path : /xltt '
 
@@ -1205,24 +1205,43 @@ function AutoCert(){
 	systemctl enable --now snapd.socket
 	ln -s /var/lib/snapd/snap /snap
 	green " =================================================="
-	green " 系统将在10秒钟之后重启以应用变更..."
+	green " 重载环境变量..."
 	green " =================================================="
-	sleep 10s
-	reboot
-}
-
-# 证书自动续期安装
-function InstallAutoCertXray(){
+	source /etc/profile
+	green " =================================================="
+	green " 启动snap..."
+	green " =================================================="
+	systemctl start snapd
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" snap启动失败...请查看日志"
+		Error
+	fi
+	sleep 3s
 	green " =================================================="
 	green " 安装snap核心"
 	green " =================================================="
-	sleep 3s
 	snap install core
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" snap核心安装失败...请查看日志"
+		Error
+	fi
 	green " =================================================="
 	green " 安装certbot"
 	green " =================================================="
 	snap install --classic certbot
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" certbot安装失败...请查看日志"
+		Error
+	fi
 	ln -s /snap/bin/certbot /usr/bin/certbot
+}
+
+# 证书自动续期安装
+function InstallAutoCertXray(){
+
 	green " =================================================="
 	green " 调整Nginx配置..."
 	green " =================================================="
@@ -1469,14 +1488,10 @@ function main(){
 		main
 	fi
 	
-	if [[ $Main == 5 ]]; then
-		AutoCert
-		exit 1
-	fi
-	
 	if [[ $Main == 7 ]]; then
 		SELINUXCheck
 		SetDomain
+		AutoCert
 		InstallAutoCertXray
 		main
 	fi
