@@ -1350,17 +1350,18 @@ EOF
 
 # 配置域名信息
 function SetDomain(){
-	read -p " 请输入域名(不包含协议头和斜杠) :" Domain
-	green " =================================================="
-	green " 您输入的域名为:"
-	yellow " ${Domain}"
-	green " =================================================="
-	DomainYes="y"
-	read -p " 确认吗? [Y/Other][默认:Y]:" DomainYes
-	if [[ $DomainYes != [Yy] ]]; then
-        SetDomain
-    fi
-
+	if [ -z "$Domain" ]; then
+		read -p " 请输入域名(不包含协议头和斜杠) :" Domain
+		green " =================================================="
+		green " 您输入的域名为:"
+		yellow " ${Domain}"
+		green " =================================================="
+		DomainYes="y"
+		read -p " 确认吗? [Y/Other][默认:Y]:" DomainYes
+		if [[ $DomainYes != [Yy] ]]; then
+			SetDomain
+		fi
+	fi
 }
 
 # 设置UUID
@@ -1430,7 +1431,6 @@ function main(){
 	green " =================================================="
 	yellow "    1 .安装V2ray          2 .安装Xray"
 	yellow "    3 .安装x-ui           4 .编译安装Nginx"
-	yellow "    5 .证书自动续期 - 预部署"
 	yellow "    6 .证书自动续期 - V2ray"
 	yellow "    7 .证书自动续期 - Xray"
 	yellow "    8 .对接V2ray与Nginx   9 .对接Xray与Nginx"
