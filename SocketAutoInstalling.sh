@@ -1345,6 +1345,115 @@ EOF
 	chmod +x /etc/letsencrypt/renewal-hooks/deploy/xray.sh
 }
 
+# 证书自动续期安装
+function InstallAutoCertV2ray(){
+
+	green " =================================================="
+	green " 调整Nginx配置..."
+	green " =================================================="
+	systemctl stop nginx.service
+	cat > "/usr/local/nginx/conf/nginx.conf" <<-EOF
+worker_processes  1;
+pid        /run/nginx.pid;
+events {
+    worker_connections 1024;
+}
+
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    sendfile        on;
+
+    keepalive_timeout  65;
+
+
+    server {
+        listen       80;
+        listen       [::]:80;
+        server_name  $Domain;
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+            root   html;
+        }
+    }
+}
+EOF
+	green " =================================================="
+	green " 配置完成,重启服务中..."
+	green " =================================================="
+	systemctl start nginx.service
+	green " 验证..."
+	netstat -anp | grep nginx &> /dev/null
+	if [ $? -ne 0 ]; then
+        ErrorInfo=" Nginx启动失败...请查看日志"
+		Error
+    fi
+	green " =================================================="
+	green " PASS"
+	green " =================================================="
+	
+	green " =================================================="
+	green " 开始申请证书..."
+	green " =================================================="
+	certbot --nginx
+	
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 证书申请失败...请查看日志"
+		Error
+	fi
+	
+	green " =================================================="
+	green " 测试续订..."
+	green " =================================================="
+	certbot renew --dry-run
+	
+	# 判断执行结果
+	if [ $? -ne 0 ]; then
+		ErrorInfo=" 证书续订测试失败...请查看日志"
+		Error
+	fi
+	
+	green " =================================================="
+	green " 证书自动化同步..."
+	green " =================================================="
+	systemctl stop v2ray
+	useradd -s /usr/sbin/nologin v2ray
+	sed -i 's/User\=nobody/User\=v2ray/g' /etc/systemd/system/v2ray.service
+	systemctl daemon-reload
+	systemctl start v2ray
+	green " 配置验证..."
+	netstat -anp | grep nginx &> /dev/null
+	if [ $? -ne 0 ]; then
+        ErrorInfo=" v2ray启动失败...请查看日志"
+		Error
+    fi
+	install -d -o v2ray -g v2ray /etc/ssl/v2ray/
+	install -m 644 -o v2ray -g v2ray /etc/letsencrypt/live/$Domain/fullchain.pem -t /etc/ssl/v2ray/
+	install -m 600 -o v2ray -g v2ray /etc/letsencrypt/live/$Domain/privkey.pem -t /etc/ssl/v2ray/
+	cat > "/etc/letsencrypt/renewal-hooks/deploy/v2ray.sh" <<-EOF
+#!/bin/bash
+
+V2RAY_DOMAIN='$Domain'
+
+if [[ "$RENEWED_LINEAGE" == "/etc/letsencrypt/live/$V2RAY_DOMAIN" ]]; then
+    install -m 644 -o v2ray -g v2ray "/etc/letsencrypt/live/$V2RAY_DOMAIN/fullchain.pem" -t /etc/ssl/v2ray/
+    install -m 600 -o v2ray -g v2ray "/etc/letsencrypt/live/$V2RAY_DOMAIN/privkey.pem" -t /etc/ssl/v2ray/
+
+    sleep "$((RANDOM % 2048))"
+    systemctl restart v2ray.service
+fi
+EOF
+	chmod +x /etc/letsencrypt/renewal-hooks/deploy/v2ray.sh
+}
+
 # 配置域名信息
 function SetDomain(){
 	if [ -z "$Domain" ]; then
@@ -1483,6 +1592,14 @@ function main(){
 		SetDomain
 		AutoCert
 		InstallAutoCertXray
+		main
+	fi
+	
+	if [[ $Main == 5 ]]; then
+		SELINUXCheck
+		SetDomain
+		AutoCert
+		InstallAutoCertV2ray
 		main
 	fi
 	
