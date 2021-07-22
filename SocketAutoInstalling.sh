@@ -1,6 +1,6 @@
 #!/bin/bash
 curl -Oks https://raw.githubusercontent.com/Morton-L/HeadScript_Linux/main/loader.sh
-source loader.sh font
+source loader.sh font error TCPCC
 
 trap _exit INT QUIT TERM
 _exit() { 
@@ -91,20 +91,6 @@ function getLinuxOSVersion(){
         osInfo=$(uname -s)
         osReleaseVersionNo=$(uname -r)
     fi
-}
-
-# 错误反馈
-function Error(){
-	red " =================================================="
-	bold "${ErrorInfo}" 
-	red " =================================================="
-	sleep 6s
-	exit 1
-}
-
-# TCP拥塞控制查询
-function TCPCC(){
-	tcpcc=$( sysctl net.ipv4.tcp_congestion_control | awk -F ' ' '{print $3}' )
 }
 
 # 安装依赖软件
