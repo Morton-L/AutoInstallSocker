@@ -1,6 +1,12 @@
 #!/bin/bash
 curl -Oks https://raw.githubusercontent.com/Morton-L/HeadScript_Linux/main/loader.sh
-source loader.sh font _EXIT
+source loader.sh font
+
+trap _exit INT QUIT TERM
+_exit() { 
+	echo -e "\033[31m\033[01m\n脚本已终止.\n\033[0m";
+	exit 1 
+}
 
 function ExternalEnv(){
 	# 系统信息获取
