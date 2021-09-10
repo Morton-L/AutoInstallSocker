@@ -1,6 +1,6 @@
 #!/bin/bash
 curl -Oks https://raw.githubusercontent.com/Morton-L/HeadScript_Linux/main/loader.sh
-source loader.sh font error TCPCC
+source loader.sh font TCPCC
 
 trap _exit INT QUIT TERM
 _exit() { 
@@ -97,6 +97,15 @@ function getLinuxOSVersion(){
 function InstallDependentSoftware(){
 	green " 安装依赖软件..."
 	$osSystemPackage install -y curl wget tar net-tools
+}
+
+# 报错信息
+function Error(){
+	red " =================================================="
+	bold "${ErrorInfo}" 
+	red " =================================================="
+	sleep 6s
+	exit 1
 }
 
 # 系统版本检查
