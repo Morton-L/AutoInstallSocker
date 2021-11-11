@@ -198,14 +198,14 @@ function InstallNginx(){
 	green " =================================================="
 	green " 开始下载Nginx源码..."
 	green " =================================================="
-	wget https://nginx.org/download/nginx-1.21.1.tar.gz
+	wget https://nginx.org/download/nginx-1.21.4.tar.gz
 	# 判断执行结果
 	if [ $? -ne 0 ]; then
 		ErrorInfo=" 下载失败...请检查网络连接"
 		Error
 	fi
-	tar -xvzf nginx-1.21.1.tar.gz
-	cd /usr/local/nginx-1.21.1
+	tar -xvzf nginx-1.21.4.tar.gz
+	cd /usr/local/nginx-1.21.4
 	./configure --with-http_ssl_module --with-http_v2_module
 	green " =================================================="
 	green " 开始编译并安装Nginx..."
@@ -1312,6 +1312,9 @@ EOF
 #!/bin/bash
 
 V2RAY_DOMAIN='$Domain'
+
+rm -rf /etc/letsencrypt/live/$V2RAY_DOMAIN/fullchain.pem
+rm -rf /etc/letsencrypt/live/$V2RAY_DOMAIN/privkey.pem
 
 if [[ "$RENEWED_LINEAGE" == "/etc/letsencrypt/live/$V2RAY_DOMAIN" ]]; then
     install -m 644 -o xray -g xray "/etc/letsencrypt/live/$V2RAY_DOMAIN/fullchain.pem" -t /etc/ssl/xray/
