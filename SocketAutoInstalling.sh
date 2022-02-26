@@ -198,14 +198,14 @@ function InstallNginx(){
 	green " =================================================="
 	green " 开始下载Nginx源码..."
 	green " =================================================="
-	wget https://nginx.org/download/nginx-1.21.1.tar.gz
+	wget https://nginx.org/download/nginx-1.21.4.tar.gz
 	# 判断执行结果
 	if [ $? -ne 0 ]; then
 		ErrorInfo=" 下载失败...请检查网络连接"
 		Error
 	fi
-	tar -xvzf nginx-1.21.1.tar.gz
-	cd /usr/local/nginx-1.21.1
+	tar -xvzf nginx-1.21.4.tar.gz
+	cd /usr/local/nginx-1.21.4
 	./configure --with-http_ssl_module --with-http_v2_module
 	green " =================================================="
 	green " 开始编译并安装Nginx..."
@@ -282,14 +282,14 @@ function InstallOpenSSL(){
 	green " =================================================="
 	green " 开始下载OpenSSL源码..."
 	green " =================================================="
-	wget https://www.openssl.org/source/openssl-1.1.1k.tar.gz
+	wget https://www.openssl.org/source/openssl-1.1.1m.tar.gz
 	# 判断执行结果
 	if [ $? -ne 0 ]; then
 		ErrorInfo=" 下载失败...请检查网络连接"
 		Error
 	fi
-	tar -xvzf openssl-1.1.1k.tar.gz
-	cd openssl-1.1.1k
+	tar -xvzf openssl-1.1.1m.tar.gz
+	cd openssl-1.1.1m
 	./Configure
 	./config
 	green " =================================================="
@@ -1012,6 +1012,9 @@ EOF
 
 # 添加防火墙规则
 function SetFirewall(){
+
+	systemctl start firewalld
+	
 	green " =================================================="
 	green " 添加防火墙规则..."
 	green " =================================================="
@@ -1312,6 +1315,9 @@ EOF
 #!/bin/bash
 
 V2RAY_DOMAIN='$Domain'
+
+rm -rf /etc/letsencrypt/live/$V2RAY_DOMAIN/fullchain.pem
+rm -rf /etc/letsencrypt/live/$V2RAY_DOMAIN/privkey.pem
 
 if [[ "$RENEWED_LINEAGE" == "/etc/letsencrypt/live/$V2RAY_DOMAIN" ]]; then
     install -m 644 -o xray -g xray "/etc/letsencrypt/live/$V2RAY_DOMAIN/fullchain.pem" -t /etc/ssl/xray/
