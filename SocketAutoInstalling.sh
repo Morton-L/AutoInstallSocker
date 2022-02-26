@@ -277,7 +277,7 @@ function InstallOpenSSL(){
 	green " 开始安装OpenSSL"
 	green " =================================================="
 	sleep 6s
-	$osSystemPackage remove -y openssl
+	# $osSystemPackage remove -y openssl
 	cd /usr/local
 	green " =================================================="
 	green " 开始下载OpenSSL源码..."
